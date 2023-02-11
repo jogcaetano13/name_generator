@@ -7,8 +7,8 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface BabyDao {
 
-    @Query("SELECT * FROM babies ORDER BY RANDOM() LIMIT 1")
-    fun getRandomBaby(): Flow<Baby>
+    @Query("SELECT * FROM babies WHERE gender = :gender ORDER BY RANDOM() LIMIT 1")
+    fun getRandomBaby(gender: Baby.Gender): Flow<Baby>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(babies: List<Baby>): List<Long>

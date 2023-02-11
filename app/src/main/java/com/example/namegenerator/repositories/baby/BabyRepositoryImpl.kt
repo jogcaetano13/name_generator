@@ -12,7 +12,7 @@ class BabyRepositoryImpl @Inject constructor(
     private val fileProvider: FileProvider
 ) : BabyRepository {
 
-    override fun getRandomBaby(): Flow<Baby> = dao.getRandomBaby()
+    override fun getRandomBaby(gender: Baby.Gender): Flow<Baby> = dao.getRandomBaby(gender)
 
     override suspend fun replaceBabies(): List<Long> {
         if (dao.getBabyCount() > 0)
@@ -22,7 +22,7 @@ class BabyRepositoryImpl @Inject constructor(
         val babiesList = Gson().fromJson<List<List<String>>>(babiesFile, List::class.java)
 
         val babies = babiesList.map {
-            Baby(it[0], it[1], it[2], it[3], it[4], it[5])
+            Baby(it[0], Baby.Gender.fromGender(it[1]), it[2], it[3], it[4], it[5])
         }
 
         return dao.replace(babies)
