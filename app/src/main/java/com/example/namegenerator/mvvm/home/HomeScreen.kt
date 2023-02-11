@@ -141,7 +141,7 @@ private fun PreviewCardBaby() {
 @Composable
 private fun PreviewHomeScreen() {
     HomeScreenContent(
-        Baby(
+        baby = Baby(
             "2016",
             Baby.Gender.FEMALE,
             "ASIAN AND PACIFIC ISLANDER",
