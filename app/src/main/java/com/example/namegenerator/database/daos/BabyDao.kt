@@ -13,6 +13,9 @@ interface BabyDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(babies: List<Baby>): List<Long>
 
+    @Query("SELECT COUNT(*) FROM babies")
+    suspend fun getBabyCount(): Int
+
     @Transaction
     suspend fun replace(babies: List<Baby>): List<Long> {
         deleteAll()
