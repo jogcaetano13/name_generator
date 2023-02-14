@@ -1,5 +1,7 @@
 package com.example.namegenerator.mvvm.home
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
@@ -25,6 +27,7 @@ fun HomeScreen() {
     )
 }
 
+@OptIn(ExperimentalAnimationApi::class)
 @Composable
 private fun HomeScreenContent(
     baby: Baby?,
@@ -55,12 +58,14 @@ private fun HomeScreenContent(
             }
 
             baby?.let {
-                Spacer(modifier = Modifier.height(30.dp))
-                
-                CardBaby(
-                    modifier = Modifier.padding(16.dp),
-                    baby = it
-                )
+                AnimatedContent(targetState = baby) {
+                    Spacer(modifier = Modifier.height(30.dp))
+
+                    CardBaby(
+                        modifier = Modifier.padding(16.dp),
+                        baby = it
+                    )
+                }
             }
         }
     }
