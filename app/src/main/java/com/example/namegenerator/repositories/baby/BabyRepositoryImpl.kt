@@ -25,6 +25,8 @@ class BabyRepositoryImpl @Inject constructor(
             Baby(it[0], Baby.Gender.fromGender(it[1]), it[2], it[3], it[4], it[5])
         }
 
+        val replace = dao.replace(babies)
+
         return dao.replace(babies)
     }
 }
