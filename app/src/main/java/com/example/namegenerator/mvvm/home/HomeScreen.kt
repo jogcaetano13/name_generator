@@ -5,6 +5,8 @@ import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -78,87 +80,115 @@ private fun HomeScreenContent(
         },
         backgroundColor = Color.LightGray
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(it),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Row {
-                BabyButton(
-                    text = "Male",
-                    isSelected = genderSelected == Baby.Gender.MALE,
-                    enabled = buttonsEnabled
+        when(babiesState) {
+            ResponseState.Empty -> {}
+            is ResponseState.Error -> Text(text = babiesState.error)
+            ResponseState.Loading -> {
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
                 ) {
-                    updateGender(Baby.Gender.MALE)
-                }
-
-                Spacer(modifier = Modifier.width(10.dp))
-
-                BabyButton(
-                    text = "Female",
-                    isSelected = genderSelected == Baby.Gender.FEMALE,
-                    enabled = buttonsEnabled
-                ) {
-                    updateGender(Baby.Gender.FEMALE)
-                }
-
-                Spacer(modifier = Modifier.width(10.dp))
-
-                BabyButton(text = "Ethnicity", enabled = buttonsEnabled) {
-                    isExpanded = !isExpanded
-                }
-            }
-
-            BabyButton(
-                text = "Generate",
-                enabled = buttonsEnabled,
-                onClick = onGetBabyClick
-            )
-
-            DropdownMenu(
-                expanded = isExpanded, onDismissRequest = { isExpanded = false }
-            ) {
-                ethnicities.forEach {
-                    DropdownMenuItem(onClick = { updateSelected(it) }) {
-                        Text(
-                            modifier = Modifier
-                                .padding(10.dp)
-                                .background(
-                                    if (ethnicitySelected == it)
-                                        Color.LightGray
-                                    else
-                                        Color.Transparent
-                                ),
-                            text = it
-                        )
-                    }
-                }
-            }
-
-            when(babiesState) {
-                ResponseState.Empty -> {}
-                is ResponseState.Error -> Text(text = babiesState.error)
-                ResponseState.Loading -> {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        CircularProgressIndicator()
-                        Text(
-                            text = "Getting babies...",
-                            textAlign = TextAlign.Center
-                        )
-                    }
-                }
-                is ResponseState.Success -> buttonsEnabled = true
-            }
-
-            baby?.let {
-                AnimatedContent(targetState = baby) {
-                    Spacer(modifier = Modifier.height(30.dp))
-
-                    CardBaby(
-                        modifier = Modifier.padding(16.dp),
-                        baby = it
+                    CircularProgressIndicator()
+                    Text(
+                        text = "Getting babies...",
+                        textAlign = TextAlign.Center
                     )
+                }
+            }
+            is ResponseState.Success -> {
+                buttonsEnabled = true
+
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(it),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Row {
+                        BabyButton(
+                            text = "Male",
+                            isSelected = genderSelected == Baby.Gender.MALE,
+                            enabled = buttonsEnabled
+                        ) {
+                            updateGender(Baby.Gender.MALE)
+                        }
+
+                        Spacer(modifier = Modifier.width(10.dp))
+
+                        BabyButton(
+                            text = "Female",
+                            isSelected = genderSelected == Baby.Gender.FEMALE,
+                            enabled = buttonsEnabled
+                        ) {
+                            updateGender(Baby.Gender.FEMALE)
+                        }
+
+                        Spacer(modifier = Modifier.width(10.dp))
+                    }
+                    
+                    Spacer(modifier = Modifier.height(20.dp))
+
+                    Column {
+                        OutlinedTextField(
+                            value = ethnicitySelected ?: "Select ethnicity",
+                            onValueChange = {},
+                            enabled = false,
+                            trailingIcon = {
+                                IconButton(onClick = { isExpanded = !isExpanded }) {
+                                    Icon(imageVector = Icons.Default.KeyboardArrowDown, contentDescription = "Ethnicity")
+                                }
+                            },
+                            colors = TextFieldDefaults.outlinedTextFieldColors(
+                                disabledTextColor = MaterialTheme.colors.onSurface,
+                                disabledBorderColor = MaterialTheme.colors.primary,
+                                disabledTrailingIconColor = MaterialTheme.colors.onSurface
+                            )
+                        )
+
+                        DropdownMenu(
+                            expanded = isExpanded, onDismissRequest = { isExpanded = false }
+                        ) {
+                            ethnicities.forEach {
+                                DropdownMenuItem(onClick = {
+                                    updateSelected(it)
+                                    isExpanded = false
+                                }) {
+                                    Text(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .background(
+                                                if (ethnicitySelected == it)
+                                                    Color.LightGray
+                                                else
+                                                    Color.Transparent
+                                            )
+                                            .padding(10.dp),
+                                        text = it
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(20.dp))
+
+                    BabyButton(
+                        text = "Generate",
+                        enabled = buttonsEnabled,
+                        onClick = onGetBabyClick
+                    )
+
+                    baby?.let {
+                        AnimatedContent(targetState = baby) {
+                            Spacer(modifier = Modifier.height(30.dp))
+
+                            CardBaby(
+                                modifier = Modifier.padding(16.dp),
+                                baby = it
+                            )
+                        }
+                    }
                 }
             }
         }
