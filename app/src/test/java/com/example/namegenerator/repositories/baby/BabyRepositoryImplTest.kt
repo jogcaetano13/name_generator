@@ -42,7 +42,7 @@ class BabyRepositoryImplTest {
             )
         ))
 
-        underTest.getRandomBaby(Baby.Gender.MALE).test {
+        underTest.getRandomBaby(Baby.Gender.MALE,).test {
             val actual = awaitItem()
             awaitComplete()
 
@@ -63,7 +63,7 @@ class BabyRepositoryImplTest {
             )
         ))
 
-        underTest.getRandomBaby(Baby.Gender.FEMALE).test {
+        underTest.getRandomBaby(Baby.Gender.FEMALE,).test {
             val actual = awaitItem()
             awaitComplete()
 

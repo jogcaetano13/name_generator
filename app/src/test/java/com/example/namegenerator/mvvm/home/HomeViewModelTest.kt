@@ -29,7 +29,7 @@ class HomeViewModelTest {
 
     @Test
     fun `given baby with female gender, then return baby state with female baby`() = runTest {
-        given(repository.getRandomBaby(Baby.Gender.FEMALE)).willReturn(flowOf(
+        given(repository.getRandomBaby(Baby.Gender.FEMALE,)).willReturn(flowOf(
             Baby(
                 "2016",
                 Baby.Gender.FEMALE,
@@ -51,7 +51,7 @@ class HomeViewModelTest {
 
     @Test
     fun `given baby with male gender, then return baby state with male baby`() = runTest {
-        given(repository.getRandomBaby(Baby.Gender.MALE)).willReturn(flowOf(
+        given(repository.getRandomBaby(Baby.Gender.MALE,)).willReturn(flowOf(
             Baby(
                 "2016",
                 Baby.Gender.MALE,

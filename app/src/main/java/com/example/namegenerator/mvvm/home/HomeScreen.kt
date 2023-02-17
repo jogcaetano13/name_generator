@@ -2,28 +2,53 @@ package com.example.namegenerator.mvvm.home
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.namegenerator.models.Baby
+import com.example.namegenerator.state.ResponseState
 
 @Composable
 fun HomeScreen() {
     val viewModel = hiltViewModel<HomeViewModel>()
     val baby by viewModel.babyState.collectAsState()
+    val ethnicities by viewModel.ethnicities.collectAsState()
+    val ethnicitySelected by viewModel.ethnicitySelected.collectAsState()
+    val babiesState by viewModel.babiesState.collectAsState()
+    val genderSelected by viewModel.babyGender.collectAsState()
+    val error by viewModel.toastError.collectAsState()
+
+    error?.let {
+        AlertDialog(
+            onDismissRequest = viewModel::dismissError,
+            title = { Text(text = "Error") },
+            text = { Text(text = it) },
+            confirmButton = {
+                Button(onClick = viewModel::dismissError) {
+                    Text(text = "Ok")
+                }
+            }
+        )
+    }
 
     HomeScreenContent(
         baby = baby,
-        onGetBabyClick = viewModel::getRandomBaby
+        onGetBabyClick = viewModel::getRandomBaby,
+        updateGender = viewModel::updateBabyGender,
+        ethnicities = ethnicities,
+        ethnicitySelected = ethnicitySelected,
+        updateSelected = viewModel::updateEthnicitySelected,
+        babiesState = babiesState,
+        genderSelected = genderSelected
     )
 }
 
@@ -31,8 +56,22 @@ fun HomeScreen() {
 @Composable
 private fun HomeScreenContent(
     baby: Baby?,
-    onGetBabyClick: (Baby.Gender) -> Unit
+    onGetBabyClick: () -> Unit,
+    updateGender: (Baby.Gender) -> Unit,
+    ethnicities: List<String>,
+    ethnicitySelected: String?,
+    updateSelected: (String) -> Unit,
+    babiesState: ResponseState<List<Baby>>,
+    genderSelected: Baby.Gender?
 ) {
+    var isExpanded by remember {
+        mutableStateOf(false)
+    }
+
+    var buttonsEnabled by remember {
+        mutableStateOf(false)
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(title = { Text(text = "Home") })
@@ -46,15 +85,70 @@ private fun HomeScreenContent(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Row {
-                BabyButton(text = "Male") {
-                    onGetBabyClick(Baby.Gender.MALE)
+                BabyButton(
+                    text = "Male",
+                    isSelected = genderSelected == Baby.Gender.MALE,
+                    enabled = buttonsEnabled
+                ) {
+                    updateGender(Baby.Gender.MALE)
                 }
 
                 Spacer(modifier = Modifier.width(10.dp))
 
-                BabyButton(text = "Female") {
-                    onGetBabyClick(Baby.Gender.FEMALE)
+                BabyButton(
+                    text = "Female",
+                    isSelected = genderSelected == Baby.Gender.FEMALE,
+                    enabled = buttonsEnabled
+                ) {
+                    updateGender(Baby.Gender.FEMALE)
                 }
+
+                Spacer(modifier = Modifier.width(10.dp))
+
+                BabyButton(text = "Ethnicity", enabled = buttonsEnabled) {
+                    isExpanded = !isExpanded
+                }
+            }
+
+            BabyButton(
+                text = "Generate",
+                enabled = buttonsEnabled,
+                onClick = onGetBabyClick
+            )
+
+            DropdownMenu(
+                expanded = isExpanded, onDismissRequest = { isExpanded = false }
+            ) {
+                ethnicities.forEach {
+                    DropdownMenuItem(onClick = { updateSelected(it) }) {
+                        Text(
+                            modifier = Modifier
+                                .padding(10.dp)
+                                .background(
+                                    if (ethnicitySelected == it)
+                                        Color.LightGray
+                                    else
+                                        Color.Transparent
+                                ),
+                            text = it
+                        )
+                    }
+                }
+            }
+
+            when(babiesState) {
+                ResponseState.Empty -> {}
+                is ResponseState.Error -> Text(text = babiesState.error)
+                ResponseState.Loading -> {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        CircularProgressIndicator()
+                        Text(
+                            text = "Getting babies...",
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                }
+                is ResponseState.Success -> buttonsEnabled = true
             }
 
             baby?.let {
@@ -120,9 +214,20 @@ private fun BabyRow(
 @Composable
 private fun BabyButton(
     text: String,
+    enabled: Boolean,
+    isSelected: Boolean = false,
     onClick: () -> Unit
 ) {
-    Button(onClick = onClick) {
+    Button(
+        onClick = onClick,
+        enabled = enabled,
+        colors = ButtonDefaults.buttonColors(
+            backgroundColor = if (isSelected)
+                Color.Gray
+            else
+                MaterialTheme.colors.primary
+        )
+    ) {
         Text(text = text)
     }
 }
@@ -154,6 +259,12 @@ private fun PreviewHomeScreen() {
             "172",
             "1"
         ),
-        onGetBabyClick = {}
+        onGetBabyClick = {},
+        updateGender = {},
+        ethnicities = emptyList(),
+        ethnicitySelected = null,
+        updateSelected = {},
+        babiesState = ResponseState.Success(emptyList()),
+        genderSelected = Baby.Gender.MALE
     )
 }
